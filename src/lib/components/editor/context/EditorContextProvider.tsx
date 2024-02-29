@@ -34,7 +34,7 @@ export const EditorContext = createContext<EditorContextProps>({
 });
 
 interface EditorContextProviderProps {
-  pricingContext: RawPricingContext;
+  pricingContext?: RawPricingContext;
   theme?: string;
   returnTo?: string;
   children: JSX.Element | JSX.Element[];
@@ -48,13 +48,15 @@ export function EditorContextProvider({
 }: EditorContextProviderProps) {
   const editorTheme = theme ? theme : "blue";
   const retTo = returnTo ? returnTo : "/";
-  const features = pricingContext.features
-    ? rawFeatureAttributesToAttributes(pricingContext.features)
-    : [];
+  const features =
+    pricingContext && pricingContext.features
+      ? rawFeatureAttributesToAttributes(pricingContext.features)
+      : [];
 
-  const initialPlans = pricingContext.plans
-    ? rawPlansToPlans(pricingContext.plans)
-    : [];
+  const initialPlans =
+    pricingContext && pricingContext.plans
+      ? rawPlansToPlans(pricingContext.plans)
+      : [];
 
   const initialUserAttributes = parseAttributeExpressionToUserAttributes(
     features

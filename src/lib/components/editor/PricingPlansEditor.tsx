@@ -8,7 +8,7 @@ import "./Form.css";
 import "./PricingPlansEditor.css";
 
 interface PricingPlansEditorProps {
-  pricingContext: RawPricingContext;
+  pricingContext?: RawPricingContext;
   returnTo: string;
   theme?: string;
   onSave: (pricingContext: RawPricingContext) => void;

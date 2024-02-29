@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Routes, Route, Outlet, useRoutes } from "react-router-dom";
 import { RawPricingContext } from "./types";
 import { PricingPlansEditor } from "./PricingPlansEditor";
 import { AttributesPage } from "./pages/Attributes";
@@ -7,7 +7,7 @@ import { EvaluationPage } from "./pages/EvaluationContext";
 import { Plan, Plans } from "./pages/Plans";
 
 interface PricingConfigurationRoutesProps {
-  pricingContext: RawPricingContext;
+  pricingContext?: RawPricingContext;
   returnTo: string;
   theme?: string;
   onSave: (pricingContext: RawPricingContext) => void;
@@ -33,35 +33,46 @@ export function PricingConfigurationRoutes({
    * rgb(1000,1000,1000) Invalid color Id does not pass validation
    */
 
-  return (
-    <Routes>
-      <Route
-        element={
-          <PricingPlansEditor
-            theme={theme}
-            pricingContext={pricingContext}
-            returnTo={returnTo}
-            onSave={onSave}
-          />
-        }
-      >
-        <Route path="/" element={<h1>Pricingplans-react</h1>} />
-        <Route path="attributes" element={<AttributesPage />} />
-        <Route
-          path="user-context"
-          element={
+  const routes = useRoutes([
+    {
+      path: "/",
+      element: (
+        <PricingPlansEditor
+          theme={theme}
+          pricingContext={pricingContext}
+          returnTo={returnTo}
+          onSave={onSave}
+        />
+      ),
+      children: [
+        {
+          path: "features",
+          element: <AttributesPage />,
+        },
+        {
+          path: "user-context",
+          element: (
             <UserContextPage
               title="User context"
               tableHeaders={["Name", "Type", "Actions"]}
             />
-          }
-        />
-        <Route path="plans" element={<Outlet />}>
-          <Route index element={<Plans />} />
-          <Route path=":planId" element={<Plan />}></Route>
-        </Route>
-        <Route path="evaluation" element={<EvaluationPage />} />
-      </Route>
-    </Routes>
-  );
+          ),
+        },
+        {
+          path: "plans",
+          element: <Plans />,
+        },
+        {
+          path: "plans/:planId",
+          element: <Plan />,
+        },
+        {
+          path: "evalutation",
+          element: <EvaluationPage />,
+        },
+      ],
+    },
+  ]);
+
+  return routes;
 }
