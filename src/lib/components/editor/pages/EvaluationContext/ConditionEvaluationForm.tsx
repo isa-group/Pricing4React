@@ -6,12 +6,13 @@ import {
   useState,
 } from "react";
 import { Button } from "../../components/Button";
-import { Attribute, Operators } from "../../types";
+import { Operators } from "../../types";
 import { computeEvaluation, parseExpression } from "../../utils";
 import { EditorContext } from "../../context/EditorContextProvider";
+import { FeatureType } from "../../features";
 
 interface ConditionEvaluationFormProps {
-  attribute: Attribute;
+  attribute: FeatureType;
   onSubmit: (name: string, expression: string) => void;
   setVisible: Dispatch<SetStateAction<boolean>>;
 }
@@ -29,7 +30,7 @@ export function ConditionEvaluationForm({
   });
   const { userContextAttributes } = useContext(EditorContext);
   const conditionAttributes = userContextAttributes.filter(
-    (attribute) => attribute.type === "CONDITION"
+    (attribute) => attribute.type === "BOOLEAN"
   );
 
   console.log(parsedExpression);
@@ -37,7 +38,7 @@ export function ConditionEvaluationForm({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    const leftOperand = `planContext['${attribute.id}']`;
+    const leftOperand = `planContext['${attribute.name}']`;
     const rightOperand = `userContext['${expression.userContextValue}']`;
 
     const exp = computeEvaluation(
@@ -45,7 +46,7 @@ export function ConditionEvaluationForm({
       expression.operator as Operators,
       rightOperand
     );
-    onSubmit(attribute.id, exp);
+    onSubmit(attribute.name, exp);
     setVisible(false);
   };
 
@@ -53,7 +54,7 @@ export function ConditionEvaluationForm({
     <form className="pp-form" onSubmit={handleSubmit}>
       <div className="pp-field">
         <label id="name">Name</label>
-        <input id="name" value={attribute.id} readOnly />
+        <input id="name" value={attribute.name} readOnly />
       </div>
       <div>
         <label id="operator">Operator</label>

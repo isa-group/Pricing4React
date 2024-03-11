@@ -6,12 +6,13 @@ import {
   useState,
 } from "react";
 import { Button } from "../../components/Button";
-import { Attribute, Operators } from "../../types";
+import { Operators } from "../../types";
 import { computeEvaluation, parseExpression } from "../../utils";
 import { EditorContext } from "../../context/EditorContextProvider";
+import { FeatureType } from "../../features";
 
 interface NumericEvaluationFormProps {
-  attribute: Attribute;
+  attribute: FeatureType;
   onSubmit: (name: string, expression: string) => void;
   setVisible: Dispatch<SetStateAction<boolean>>;
 }
@@ -35,7 +36,7 @@ export function NumericEvaluationForm({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    const leftOperand = `planContext['${attribute.id}']`;
+    const leftOperand = `planContext['${attribute.name}']`;
     const rightOperand = `userContext['${form.valueToCompare}']`;
 
     const expression = computeEvaluation(
@@ -43,7 +44,7 @@ export function NumericEvaluationForm({
       form.operator as Operators,
       rightOperand
     );
-    onSubmit(attribute.id, expression);
+    onSubmit(attribute.name, expression);
     setVisible(false);
   };
 
@@ -51,7 +52,7 @@ export function NumericEvaluationForm({
     <form className="pp-form" onSubmit={handleSubmit}>
       <div className="pp-field">
         <label id="name">Name</label>
-        <input id="name" value={attribute.id} readOnly />
+        <input id="name" value={attribute.name} readOnly />
       </div>
       <div>
         <label id="operator">Operator</label>

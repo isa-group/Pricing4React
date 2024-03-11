@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useContext, useState } from "react";
-import { Attribute, Feat, Command } from "../../types";
+import { Command } from "../../types";
 import { Button } from "../../components/Button";
 import { Table } from "../../components/Table";
 import { Modal } from "../../components/Modal";
@@ -7,13 +7,22 @@ import { AttributeForm } from "./AttributeForm";
 import { Pencil, Plus, Trash } from "../../components/Icons";
 import { EditorContext } from "../../context/EditorContextProvider";
 import "./AttributesPage.css";
+import {
+  AutomationType,
+  FeatureOverwrite,
+  FeatureType,
+  IntegrationType,
+  PaymentTypes,
+} from "../../features";
 
-const emptyAttribute: Attribute = {
-  id: "",
+const emptyAttribute: FeatureType = {
+  name: "",
   description: "",
-  type: "TEXT",
+  valueType: "TEXT",
   defaultValue: "",
+  type: "DOMAIN",
   expression: "",
+  serverExpression: "",
 };
 
 export function AttributesPage() {
@@ -27,31 +36,29 @@ export function AttributesPage() {
 
   const closeModal = () => setvisible(false);
 
-  const addPlanAttributes = (attribute: Attribute) => {
+  const addPlanAttributes = (feature: FeatureType) => {
     const updatedPlans = plans.map((plan) => {
+      const updatedFeature: FeatureOverwrite = {
+        [feature.name]: { value: feature.defaultValue },
+      };
       return {
         ...plan,
-        features: [
-          ...plan.features,
-          {
-            name: attribute.id,
-            type: attribute.type,
-            value: attribute.defaultValue,
-          },
-        ],
+        features:
+          plan.features === null ? null : { ...plan.features, updatedFeature },
       };
     });
     setPlans(updatedPlans);
   };
 
-  const addAttribute = (attribute: Attribute) => {
-    setAttributes([...attributes, attribute]);
-    addPlanAttributes(attribute);
+  const addAttribute = (feature: FeatureType) => {
+    console.log(attributes);
+    setAttributes([...attributes, feature]);
+    addPlanAttributes(feature);
     closeModal();
   };
 
   const isAttributeDuplicatedWhenAdding = (name: string) =>
-    attributes.filter((attribute) => attribute.id === name).length !== 0;
+    attributes.filter((feature) => feature.name === name).length !== 0;
 
   return (
     <article className="pp-content__main">
@@ -110,7 +117,9 @@ function AttributeList({
     useContext(EditorContext);
   const [position, setPosition] = useState(-1);
 
-  const displayDefaulValueText = (defaultValue: string | number | boolean) => {
+  const displayDefaulValueText = (
+    defaultValue: string | number | boolean | string[]
+  ) => {
     switch (typeof defaultValue) {
       case "string":
       case "number":
@@ -123,16 +132,14 @@ function AttributeList({
 
   const duplicatedAttributeWhenEditing = (name: string) =>
     attributes.filter(
-      (attribute, index) => index !== position && attribute.id === name
+      (feature, index) => index !== position && feature.name === name
     ).length !== 0;
 
   const deleteAttribute = (name: string) => {
-    setAttributes(attributes.filter((attribute) => attribute.id !== name));
+    setAttributes(attributes.filter((feature) => feature.name !== name));
     setPlans(
       plans.map((plan) => {
-        const newFeatures = plan.features.filter(
-          (feature) => feature.name !== name
-        );
+        const newFeatures = null;
         return { ...plan, features: newFeatures };
       })
     );
@@ -140,9 +147,9 @@ function AttributeList({
   };
 
   const computeNextFeature = (
-    previousFeature: Feat,
-    newFeature: Feat
-  ): Feat => {
+    previousFeature: FeatureType,
+    newFeature: FeatureType
+  ): FeatureType => {
     if (
       previousFeature.name !== newFeature.name &&
       previousFeature.type === newFeature.type
@@ -156,27 +163,18 @@ function AttributeList({
     return previousFeature;
   };
 
-  const editPlanAttributes = (attribute: Attribute) => {
-    const newFeature: Feat = {
-      name: attribute.id,
-      type: attribute.type,
-      value: attribute.defaultValue,
-    };
+  const editPlanAttributes = (attribute: FeatureType) => {
     const updatedPlans = plans.map((plan) => {
       const oldAttribute = attributes[position];
       return {
         ...plan,
-        features: plan.features.map((feature) =>
-          feature.name === oldAttribute.id
-            ? computeNextFeature(feature, newFeature)
-            : feature
-        ),
+        features: null,
       };
     });
     setPlans(updatedPlans);
   };
 
-  const handleEditAttribute = (newAttribute: Attribute) => {
+  const handleEditAttribute = (newAttribute: FeatureType) => {
     setAttributes((attributes) =>
       attributes.map((previousAttribute, index) => {
         return index === position ? newAttribute : previousAttribute;
@@ -189,10 +187,10 @@ function AttributeList({
   return (
     <>
       {attributes.map((attribute, index) => (
-        <tr key={attribute.id}>
-          <td>{attribute.id}</td>
-          <td className={`pp-table-type__${attribute.type}`}>
-            {attribute.type}
+        <tr key={attribute.name}>
+          <td>{attribute.name}</td>
+          <td className={`pp-table-type__${attribute.valueType}`}>
+            {attribute.valueType}
           </td>
           <td>{displayDefaulValueText(attribute.defaultValue)}</td>
           <td className="pp-table-actions">
@@ -233,13 +231,13 @@ function AttributeList({
                 isModalVisible && command === "delete" && position === index
               }
             >
-              <h2>Do you want to delete {attribute.id}?</h2>
+              <h2>Do you want to delete {attribute.name}?</h2>
               <Button className="pp-btn" onClick={() => setVisible(false)}>
                 NO
               </Button>
               <Button
                 className="pp-btn"
-                onClick={() => deleteAttribute(attribute.id)}
+                onClick={() => deleteAttribute(attribute.name)}
               >
                 YES
               </Button>

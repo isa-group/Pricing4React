@@ -1,21 +1,25 @@
-import {
-  Attribute,
-  AttributeType,
-  Attributes,
+import type {
   Expression,
-  Features,
   Operators,
   ParsedToken,
   Plan,
   Plans,
-  RawAttributes,
-  RawFeatureAttributes,
-  RawFeatures,
   RawPlan,
   RawPlans,
   RawPricingContext,
   UserContextAttributes,
 } from "../types";
+
+import type {
+  Features,
+  FeatureOverwrite,
+  ValueType,
+  FeatureType,
+  RawFeatureAttributes,
+  RawFeature,
+  RawFeatures,
+  FeatureOverwrites,
+} from "../features";
 
 export function computeEvaluation(
   leftOperand: string,
@@ -39,26 +43,29 @@ export function computeEvaluation(
   }
 }
 
-export function computeType(value: any): AttributeType {
+export function computeValueType(value: any): ValueType {
   switch (typeof value) {
     case "string":
       return "TEXT";
     case "number":
       return "NUMERIC";
     case "boolean":
-      return "CONDITION";
+      return "BOOLEAN";
     default:
       return "TEXT";
   }
 }
 
 export function parseAttributeExpressionToUserAttributes(
-  attributes: Attributes
+  attributes: Features
 ): UserContextAttributes {
+  if (attributes.length === 0) {
+    return [];
+  }
   return attributes.map((attribute) => {
     const expression = parseExpression(attribute.expression);
 
-    return { type: attribute.type, id: expression.userContext ?? "" };
+    return { type: attribute.valueType, id: expression.userContext ?? "" };
   });
 }
 
@@ -131,8 +138,9 @@ function parseToken(token: string): ParsedToken {
   }
 }
 
+/*
 export function buildRawPricingContext(
-  attributes: Attributes,
+  attributes: Features,
   plans: Plans
 ): RawPricingContext {
   return {
@@ -140,77 +148,78 @@ export function buildRawPricingContext(
     plans: plansToRawPlans(plans),
   };
 }
+*/
 
-function attributesToRawAttributes(
-  attributes: Attributes
-): RawFeatureAttributes {
+function attributesToRawAttributes(features: Features): RawFeatureAttributes {
   return Object.fromEntries(
-    attributes.map((attribute) => {
-      const rawAttributes: RawAttributes = {
-        description: attribute.description,
-        expression: attribute.expression,
-        type: attribute.type,
-        defaultValue: attribute.defaultValue,
+    features.map((feature) => {
+      const rawAttributes: FeatureOverwrite = {
+        [feature.name]: {
+          value: feature.defaultValue,
+        },
       };
-      return [attribute.id, rawAttributes];
+      return [feature.name, rawAttributes];
     })
   );
 }
 
+/*
 function plansToRawPlans(plans: Plans): RawPlans {
   return Object.fromEntries(
     plans.map((plan) => {
       const rawPlan: RawPlan = {
         description: plan.description,
-        price: plan.price,
+        monthlyPrice: plan.monthlyPrice,
+        annualPrice: plan.annualPrice,
         currency: plan.currency,
-        features: featuresToRawFeatures(plan.features),
+        features:
+          plan.features !== null ? featuresToRawFeatures(plan.features) : null,
       };
       return [plan.name, rawPlan];
     })
   );
 }
+*/
 
-function featuresToRawFeatures(features: Features): RawFeatures {
+function featuresToRawFeatures(features: Features): FeatureOverwrite {
   return Object.fromEntries(
-    features.map((feature) => [feature.name, { value: feature.value }])
+    features.map((feature) => [
+      { [feature.name]: { value: feature.defaultValue } },
+    ])
   );
 }
 
+/*
 export function rawFeatureAttributesToAttributes(
-  rawFeatureAttributes: RawFeatureAttributes
-): Attributes {
+  rawFeatureAttributes: RawFeature
+): Features {
   return Object.entries(rawFeatureAttributes).map(
-    ([attributeName, attributes]) => {
-      const attribute: Attribute = {
-        id: attributeName,
-        description: attributes.description,
-        expression: attributes.expression,
-        type: attributes.type,
-        defaultValue: attributes.defaultValue,
+    ([featureName, featureAttributes]) => {
+      const feature: FeatureType = {
+        name: featureName,
+        description: featureAttributes.description,
+        expression: featureAttributes.expression,
+        serverExpression: featureAttributes.serverExpression,
+        valueType: featureAttributes.valueType,
+        type: featureAttributes.type,
+        defaultValue: featureAttributes.defaultValue,
       };
-      return attribute;
+      return feature;
     }
   );
 }
+*/
 
 export function rawPlansToPlans(rawPlans: RawPlans): Plans {
   return Object.entries(rawPlans).map(([planName, attributes]) => {
     const plan: Plan = {
       name: planName,
       description: attributes.description,
-      price: attributes.price,
+      monthlyPrice: attributes.monthlyPrice,
+      annualPrice: attributes.annualPrice,
       currency: attributes.currency,
-      features: rawFeaturesToFeatures(attributes.features),
+      features: attributes.features,
     };
     return plan;
   });
-}
-
-function rawFeaturesToFeatures(features: RawFeatures): Features {
-  return Object.entries(features).map(([featureName, attributes]) => ({
-    name: featureName,
-    type: computeType(attributes.value),
-    value: attributes.value,
-  }));
 }

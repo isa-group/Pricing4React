@@ -1,37 +1,42 @@
+import {
+  Features,
+  ValueType,
+  FeatureOverwrites,
+  RawFeatures,
+  PaymentTypes,
+} from "./features";
+
+export interface Entity {
+  name: string;
+  description: string;
+}
+
+export interface Value<T> {
+  valueType: T extends boolean
+    ? "BOOLEAN"
+    : T extends number
+    ? "NUMERIC"
+    : "TEXT";
+  defaultValue: T;
+}
+
 export interface PricingContext {
+  saasName: string;
+  date: Date;
+  currency: String;
+  hasAnnualPayment: boolean;
   features: Features;
   plans: Plans;
 }
 
 export type Plans = Plan[];
 
-export interface Plan {
-  name: string;
-  description: string;
-  price: number;
+export interface Plan extends Entity {
   currency: string;
-  features: Features;
+  monthlyPrice: number;
+  annualPrice: number;
+  features: FeatureOverwrites | null;
 }
-
-export type Features = Feat[];
-
-export interface Feat {
-  name: string;
-  type: AttributeType;
-  value: string | number | boolean;
-}
-
-export interface Attribute {
-  id: string;
-  description: string;
-  type: AttributeType;
-  defaultValue: string | number | boolean;
-  expression: string;
-}
-
-export type AttributeType = "NUMERIC" | "CONDITION" | "TEXT";
-
-export type Attributes = Attribute[];
 
 type Noop = "";
 type Lower = "<";
@@ -48,7 +53,7 @@ export type UserContextAttributes = UserContextAttribute[];
 
 export interface UserContextAttribute {
   id: string;
-  type: AttributeType;
+  type: ValueType;
 }
 
 export type Operators =
@@ -88,22 +93,10 @@ export interface Expression {
   customValue?: string;
 }
 
-export interface RawPricingContext {
-  features: RawFeatureAttributes;
+export type RawPricingContext = Omit<PricingContext, "features" | "plans"> & {
+  features: RawFeatures;
   plans: RawPlans;
-}
-
-export interface RawFeatureAttributes {
-  [key: string]: RawAttributes;
-}
-
-export interface RawAttributes {
-  description: string;
-  expression: string;
-  serverExpression?: string;
-  type: AttributeType;
-  defaultValue: string | number | boolean;
-}
+};
 
 export interface RawPlans {
   [key: string]: RawPlan;
@@ -111,13 +104,8 @@ export interface RawPlans {
 
 export interface RawPlan {
   description: string;
-  price: number;
+  monthlyPrice: number;
+  annualPrice: number;
   currency: string;
-  features: RawFeatures;
-}
-
-export interface RawFeatures {
-  [key: string]: {
-    value: string | number | boolean;
-  };
+  features: FeatureOverwrites | null;
 }

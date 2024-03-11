@@ -1,19 +1,14 @@
 import { Dispatch, SetStateAction, createContext, useState } from "react";
-import {
-  Attributes,
-  Plans,
-  RawPricingContext,
-  UserContextAttributes,
-} from "../types";
+import { Plans, RawPricingContext, UserContextAttributes } from "../types";
 import {
   parseAttributeExpressionToUserAttributes,
-  rawFeatureAttributesToAttributes,
   rawPlansToPlans,
 } from "../utils";
+import { Features } from "../features";
 
 interface EditorContextProps {
-  attributes: Attributes;
-  setAttributes: Dispatch<SetStateAction<Attributes>>;
+  attributes: Features;
+  setAttributes: Dispatch<SetStateAction<Features>>;
   userContextAttributes: UserContextAttributes;
   setUserContextAttributes: Dispatch<SetStateAction<UserContextAttributes>>;
   plans: Plans;
@@ -25,7 +20,7 @@ interface EditorContextProps {
 export const EditorContext = createContext<EditorContextProps>({
   theme: "blue",
   returnTo: "/",
-  attributes: [] as Attributes,
+  attributes: [] as Features,
   setAttributes: () => null,
   userContextAttributes: [] as UserContextAttributes,
   setUserContextAttributes: () => null,
@@ -48,10 +43,7 @@ export function EditorContextProvider({
 }: EditorContextProviderProps) {
   const editorTheme = theme ? theme : "blue";
   const retTo = returnTo ? returnTo : "/";
-  const features =
-    pricingContext && pricingContext.features
-      ? rawFeatureAttributesToAttributes(pricingContext.features)
-      : [];
+  const features: Features = [];
 
   const initialPlans =
     pricingContext && pricingContext.plans
@@ -61,7 +53,7 @@ export function EditorContextProvider({
   const initialUserAttributes = parseAttributeExpressionToUserAttributes(
     features
   ).filter((userAttribute) => userAttribute.id !== "");
-  const [attributes, setAttributes] = useState(features);
+  const [attributes, setAttributes] = useState(features as Features);
   const [userContextAttributes, setUserContextAttributes] = useState(
     initialUserAttributes
   );

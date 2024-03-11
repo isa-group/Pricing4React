@@ -2,14 +2,16 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { PricingConfigurationRoutes } from "./PricingConfigurationRoutes";
-import { RawFeatureAttributes, RawPlans, RawPricingContext } from "./types";
+import { PricingContext, RawPlans, RawPricingContext } from "./types";
+import { RawFeatureAttributes, RawFeatures } from "./features";
 
-const features: RawFeatureAttributes = {
+const features: RawFeatures = {
   allowGameSpectators: {
     description: "Max games limit per user in the clinic",
     expression: "planContext['allowGameSpectators']",
     serverExpression: "planContext['maxPets'] >= userContext['pets']",
-    type: "CONDITION",
+    valueType: "BOOLEAN",
+    type: "DOMAIN",
     defaultValue: false,
   },
   maxGames: {
@@ -17,15 +19,16 @@ const features: RawFeatureAttributes = {
     expression: "planContext['maxGames'] > userContext['games']",
     serverExpression:
       "planContext['maxVisitsPerMonthAndPet'] >= userContext['visitsPerMonth']",
-    type: "NUMERIC",
+    valueType: "NUMERIC",
+    type: "DOMAIN",
     defaultValue: 5,
   },
 };
-
 const plans: RawPlans = {
   BASIC: {
     description: "Plan for basic users",
-    price: 0,
+    monthlyPrice: 0,
+    annualPrice: 0,
     currency: "EUR",
     features: {
       maxGames: {
@@ -38,7 +41,8 @@ const plans: RawPlans = {
   },
   ADVANCED: {
     description: "Plan for advanced users",
-    price: 9.99,
+    monthlyPrice: 9.99,
+    annualPrice: 9.99,
     currency: "EUR",
     features: {
       maxGames: {
@@ -51,7 +55,8 @@ const plans: RawPlans = {
   },
   PRO: {
     description: "Plan for pro users",
-    price: 14.99,
+    monthlyPrice: 14.99,
+    annualPrice: 14.99,
     currency: "EUR",
     features: {
       maxGames: {
@@ -65,6 +70,10 @@ const plans: RawPlans = {
 };
 
 const pricingContext: RawPricingContext = {
+  saasName: "Test",
+  date: new Date(),
+  currency: "EUR",
+  hasAnnualPayment: false,
   features,
   plans,
 };

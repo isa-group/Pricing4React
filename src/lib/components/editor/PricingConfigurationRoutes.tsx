@@ -4,7 +4,7 @@ import { PricingPlansEditor } from "./PricingPlansEditor";
 import { AttributesPage } from "./pages/Attributes";
 import { UserContextPage } from "./pages/UserContext";
 import { EvaluationPage } from "./pages/EvaluationContext";
-import { Plan, Plans } from "./pages/Plans";
+import { Plans } from "./pages/Plans";
 
 interface PricingConfigurationRoutesProps {
   pricingContext?: RawPricingContext;
@@ -61,10 +61,6 @@ export function PricingConfigurationRoutes({
         {
           path: "plans",
           element: <Plans />,
-        },
-        {
-          path: "plans/:planId",
-          element: <Plan />,
         },
         {
           path: "evalutation",

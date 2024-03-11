@@ -7,8 +7,9 @@ import { EditorContext } from "../../context/EditorContextProvider";
 import { TextEvaluationForm } from "./TextEvaluationForm";
 import { NumericEvaluationForm } from "./NumericEvaluationForm";
 import "./EvaluationPage.css";
-import { Attribute, Command } from "../../types";
+import { Command } from "../../types";
 import { ConditionEvaluationForm } from "./ConditionEvaluationForm";
+import { FeatureType } from "../../features";
 
 export function EvaluationPage() {
   const [visible, setVisible] = useState(false);
@@ -54,15 +55,15 @@ function EvaluationList({
   const updateEvaluation = (name: string, expression: string) =>
     setAttributes(
       attributes.map((attribute) => {
-        const updatedAttribute: Attribute = { ...attribute, expression };
-        return attribute.id === name ? updatedAttribute : attribute;
+        const updatedAttribute: FeatureType = { ...attribute, expression };
+        return attribute.name === name ? updatedAttribute : attribute;
       })
     );
 
   const deleteEvaluation = (name: string) => {
     setAttributes(
       attributes.map((attribute) =>
-        attribute.id === name ? { ...attribute, expression: "" } : attribute
+        attribute.name === name ? { ...attribute, expression: "" } : attribute
       )
     );
     setVisible(false);
@@ -71,10 +72,10 @@ function EvaluationList({
   return (
     <>
       {attributes.map((attribute, index) => (
-        <tr key={attribute.id}>
-          <td>{attribute.id}</td>
-          <td className={`pp-table-type__${attribute.type}`}>
-            {attribute.type}
+        <tr key={attribute.name}>
+          <td>{attribute.name}</td>
+          <td className={`pp-table-type__${attribute.valueType}`}>
+            {attribute.valueType}
           </td>
           <td className="expression">
             {attribute.expression === "" ? "NOT EVALUATED" : "EVALUATED"}
@@ -93,21 +94,21 @@ function EvaluationList({
               open={isModalVisible && command === "edit" && position === index}
             >
               <>
-                {attribute.type === "TEXT" && (
+                {attribute.valueType === "TEXT" && (
                   <TextEvaluationForm
                     attribute={attribute}
                     onSubmit={updateEvaluation}
                     setVisible={setVisible}
                   />
                 )}
-                {attribute.type === "NUMERIC" && (
+                {attribute.valueType === "NUMERIC" && (
                   <NumericEvaluationForm
                     attribute={attribute}
                     onSubmit={updateEvaluation}
                     setVisible={setVisible}
                   />
                 )}
-                {attribute.type === "CONDITION" && (
+                {attribute.valueType === "BOOLEAN" && (
                   <ConditionEvaluationForm
                     attribute={attribute}
                     onSubmit={updateEvaluation}
@@ -132,14 +133,14 @@ function EvaluationList({
               }
             >
               <h2>
-                This action will stop evaluating {attribute.id}. Are you sure?
+                This action will stop evaluating {attribute.name}. Are you sure?
               </h2>
               <Button className="pp-btn" onClick={() => setVisible(false)}>
                 NO
               </Button>
               <Button
                 className="pp-btn"
-                onClick={() => deleteEvaluation(attribute.id)}
+                onClick={() => deleteEvaluation(attribute.name)}
               >
                 YES
               </Button>

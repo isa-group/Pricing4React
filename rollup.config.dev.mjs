@@ -4,45 +4,34 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import copy from "rollup-plugin-copy";
 import commonjs from "@rollup/plugin-commonjs";
 import watchAssets from "rollup-plugin-watch-assets";
-import terser from "@rollup/plugin-terser";
-
-//Postcss Plugins
-import cssnano from "cssnano";
+import replace from "@rollup/plugin-replace";
 
 export default [
   {
-    input: "src/index.ts",
+    input: "src/lib/components/editor/editor.tsx",
     output: [
       {
-        file: "dist/esm/index.js",
-        format: "esm",
-      },
-      {
-        file: "dist/cjs/index.js",
-        format: "cjs",
+        file: "dist/index.js",
+        format: "iife",
+        sourceMap: true,
       },
     ],
     plugins: [
       nodeResolve({ preferBuiltins: true }),
       commonjs(),
-      typescript({ sourceMap: true }),
-      terser(),
-      postcss({ plugins: [cssnano()] }),
+      typescript({ compilerOptions: { sourceMap: true } }),
+      postcss(),
       copy({
         targets: [
           { src: "src/lib/components/editor/assets/**/*", dest: "dist/assets" },
+          { src: "src/lib/components/editor/index.html", dest: "dist" },
         ],
       }),
       watchAssets({ assets: ["src"] }),
-    ],
-    external: [
-      "axios",
-      "buffer",
-      "long",
-      "protobufjs/minimal",
-      "react",
-      "react-dom",
-      "react-router-dom",
+      replace({
+        preventAssignment: true,
+        "process.env.NODE_ENV": JSON.stringify("development"),
+      }),
     ],
   },
 ];

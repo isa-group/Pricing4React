@@ -31,8 +31,10 @@ export function Plans() {
                 <h2>{plan.name}</h2>
                 <h3>Description</h3>
                 <p>{plan.description}</p>
-                <h3>Price</h3>
-                <span>{plan.price}</span> <span>{plan.currency}</span>
+                <h3>Monthly Price</h3>
+                <span>{plan.monthlyPrice}</span> <span>{plan.currency}</span>
+                <h3>Annual price</h3>
+                <span>{plan.annualPrice}</span> <span>{plan.currency}</span>
               </div>
             </Link>
           </li>
